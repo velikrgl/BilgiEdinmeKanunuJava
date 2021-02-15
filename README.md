@@ -1,4 +1,4 @@
-                                                                BİLGİ EDİNME KANUNU IMPLEMENTASYONU 
+                                         BİLGİ EDİNME KANUNU IMPLEMENTASYONU 
 
 
 4982 sayılı Bilgi Edinme Hakkı Kanunu kapsamında tanınan bilgi edinme hakkı ile kişiler, kurum ve kuruluşların kayıtlarında bulunan bilgi ve belgeleri talep etmek için kullanılabilir (dilekçe hakkı başka bir haktır).
