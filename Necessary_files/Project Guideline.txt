@@ -1,0 +1,162 @@
+(A) Database Design
+
+	Olmasi gereken tablolar (bu bir örnek sadece, pek çok farklı çözüm olabilir):
+	
+	- Basvuru
+	  BasvuruNo					: 1 den başlayıp birer birer artan bir numara  (Primary Key)
+	  BasvuruTarihi				: başvurunun yapıldığı tarih (başvuru webden yapılırsa işlem tarihi, e-mail/fax/posta/elden yapılırsa buradaki tarih)
+	  BasvuruCevapSonTarihi		: başvurunun cevapanacagi son tarih (BasvuruTarihi + 15 gun, baska kuruma yonlendirilrse BasvuruTarihi + 30 gun olarak guncellenecek)
+	  BasvuranTipiNo			: BasvuranTipi tablosundan kodu gelecek
+	  BasvuruTipiNo				: BasvuruTipi  tablosundan kodu gelecek
+	  BasvuruDurumuNo			: BasvuruDurumu  tablosundan kodu gelecek
+	  TurkVatandasimi			: false veya 0 : TC vatandasi degilse,  true veya 1 : TC vatandasi
+	  TCKimlikNo				: decimal(11, 0)  : TCKimlikNo, Adi, Soyadi icin ayri bir tablo da yapabilirsiniz, brada Basvuru tablosu içinde de kalabilir
+	  Adi						: varchar(50)
+	  Soyadi					: varchar(50)
+	  TuzelKisimi				: false veya 0 : gerçek kişi,  true veya 1 : tüzel kişi
+	  TuzelKisiUnvani			: varchar(100)
+	  Adres						: varchar(250),  note that you can keep this address with a better approach if you have a Geography table, think about it
+	  AdresTipiNo				: AdresTipi  tablosundan kodu gelecek
+	  Eposta					: varchar(250)
+	  Telefonu					: varchar(30)
+	  TelefonTipiNo				: TelefonTipi  tablosundan kodu gelecek
+	  Fax						: varchar(30)
+	  CevaplamaTipiNo			: CevaplamaTipi  tablosundan kodu gelecek
+	  BasvuruCevabiAciklama		: varchar(1000)
+	  RedSebebiNo				: RedSebebi tablosundan kodu gelecek
+	  Not: Eger BasvuruDurumuAciklama reddedildi ise BasvuruCevabiAciklama alanının metin bilgisi RedSebebi tablosundaki listeden sectirilecek. Operator bu alani istediği gibi duzenleyebilir
+	  
+	- BasvuruBilgiBelge
+	  VeriNo	: 1 den başlayıp birer birer artan bir numara (Primary Key)
+	  BasvuruNo	: int (Basvuru tablosuna bagli)
+	  Bilgimi  	: false veya 0 : belge,  true veya 1 : bilgi
+	  Veri      : BLOB / URL / File reference etc
+	  
+	- BasvuruKurumYonlendirme
+	  BasvuruNo	: int (Basvuru tablosuna bagli)
+	  YonlendirilenKurumNo : Kurum tablosundan KurumNo ya bagli
+	  
+	- BasvuruUcreti
+	  BasvuruNo	: int (Basvuru tablosuna bagli)
+	  UcretTalepTarihi : Date
+	  BasvuruUcreti  : decimal(10, 2)
+	  Odendimi	: false veya 0 : odenmedi,  true veya 1 : odendi
+	  Not: UcretTalepTarihi + 15 gun icinde ucret odenmezse reddedilir. Ucretin odendigi tarihin 15 gun sonrasi Basvuru tablosunda BasvuruCevapSonTarihi e update edilir
+	  
+	- BasvuranTipi 
+	  BasvuranTipiNo : int
+	  BasvuranTipiAciklama: Gercek, Tuzel
+	
+	- BasvuruTipi
+	  BasvuruTipiNo : int
+	  BasvuruTipiAciklama:  Internet, Fax, E-mail, Yazili, Başka Kurumdan
+	
+	- BasvuruDurumu 
+	  BasvuruDurumuNo : int
+	  BasvuruDurumuAciklama :  İnceleme asamasinda, Başka kuruma yönlendirildi, Kabul edildi, Reddedildi
+	  Not: Bir başvuru ilk oluşturulduğunda BasvuruDurumuNo = 1 yani 'İnceleme asamasinda' olmalı
+	
+	- AdresTipi
+	  AdresTipiNo : int
+	  AdresTipiAciklama : İş, Ev
+	
+	- TelefonTipi
+	  TelefonTipiNo : int
+	  TelefonTipiAciklama : İş, Ev, Mobil
+	
+	- CevaplamaTipi
+	  CevaplamaTipiNo : int
+	  CevaplamaTipiAciklama : Yazili, EPosta
+
+	- RedSebebi 
+	  RedSebebiNo : int
+	  RedSebebiAciklama  :  Red sebepleri 12 tane, ve varsa başka red sebepleri varsa eklenebilir
+	  GizliBilgimi :   false veya 0 : gizli/sır değil,  true veya 1 : gizli/sır
+		
+	- Kurum 
+	  KurumNo : int - PrimaryKey
+	  KurumAdi : varchar
+	  KurumParentNo : int
+	  KurumTipiNo :  KurumTipi  tablosundan kodu gelecek
+	  Not:  KurumNo=1, KurumAdi='Cumhurbaşkanlığı', KurumParentNo=null (bu kayıt CİMER olarak da düşünülebilir)
+	  
+	- KurumTipi
+  	  KurumTipiNo : int - PrimaryKey
+	  KurumTipiAciklama : Kamu kurum ve kuruluşları, Kamu kurumu niteliğindeki meslek kuruluşu
+	
+	- Personel
+	  PersonelId  : int - PrimaryKey
+	  ManagerId  : int
+	  Adi : varchar(30)
+	  Soyadi : varchar(30)
+	  
+	- Kullanici
+	  PersonelId  : int - PrimaryKey (Personel tablosundan gelecek)
+	  ...
+	  
+	- KullaniciYetki
+	  PersonelId  : int - PrimaryKey (Kullanici tablosundan gelecek)
+	  YetkiNo  : Yetki tablosundan gelecek
+	  ...
+	  
+	- Yetki
+	  YetkiNo : int
+	  YetkiAciklama : varchar(250) - işlem yetkisi açıklam (örneğin 1740 nolu ekranı açabilme)
+
+
+	Dikkat edilecek hususlar
+	  * Gerekli tabloların tasarlanmış olması
+	  * SQL Server da Diagram oluşturulmuş olması ve diyagram layout unun güzelce düzenlenmiş olması
+	  * Tablo ve kolon isimlerinin güzel seçilmiş olması
+	  * Tablolarda doğru primary key lerin tanımlanmış olması
+	  * Tablolarda doğru foreign key lerin tanımlanmış olması
+	  * Kolon veri tiplerinin ve boyutlarının doğru seçilmiş olması
+	  * Kolon veri tiplerinin nullable olmasının doğru seçilmiş olması
+	  * Tablolara uygun indexlerin eklenmiş olması
+	  * Tablolara örnek veriler girilmiş olması
+	  * Uygun constraintlerin eklenmiş olması
+
+
+
+    ------------------------------
+
+	
+
+(B) Model and Java Codes
+
+	- CRUD (Create, Read, Update, Delete) SQL leri
+	  * Web arayüzünden başvuru yapılması. Aşağıdaki senaryo kombinasyonları için
+	    a. Tüzel kişi / Gerçek kişi
+		c. TC vatandaşı / TC vatandaşı değil
+		d. Yazılı cevap istiyor / E-posta cevap istiyor
+		Son cevaplama tarihi başvuru tarihi + 15 gün olacak
+	  * Fax ile başvuru yapılması. Bir senaryo için
+	  * Posta ile başvuru yapılması. Bir senaryo için
+	  * Dilekçe ile elden başvuru yapılması. Bir senaryo için
+	  * Başvurunun başka bir kuruma gönderilmesi (son cevaplama tarihine 15 gün daha eklenmesi)
+	  * Başvuru için bir ücret talep edilmesi
+	  * Başvuru ücretinin alınması (son cevaplama tarihin ücretin alınmasına 15 gün daha eklenmesi şeklinde güncellenecek)
+	  * Başvuru ücreti ödenmediği için başvurunun reddedilmesi
+	  * Başvurunun kabul edilip istenen bilgi belgenin verilmesi
+	  * Başvurunun reddedilmesi ve red sebebinin belirtilmesi
+
+	- Select SQL leri
+	  Sorgu: 
+	  * Aynı kişiye ait başvuruların gösterilmesi (bir kişinin yanlışlıkla aynı başvuruyu birden fazla kez yaptığını görebilmek için)
+	  * Cevap bekliyen başvuruların kalan süreye göre (en çabuk cevaplanması gerekenden başlayarak) listelenmesi
+	  * Başvuru sahibinin (Başvuru no ve Başvuru tarihi ile) başvurusunun durumunu sorgulaması
+	  Rapor: 
+	  * Kendilerine yapılan bilgi edinme başvurularının sayısını,
+	  * Olumlu cevaplanarak bilgi veya belgelere erişim sağlanan başvuru sayısını,
+	  * Reddedilen başvuru sayısı ve bunların dağılımını gösterir istatistik bilgileri,
+	  * Gizli ya da sır niteliğindeki bilgiler çıkarılarak ya da bu nitelikteki bilgiler ayrılarak bilgi veya belgelere erişim sağlanan başvuru sayısını,
+	  * Başvurunun reddedilmesi üzerine itiraz edilen başvuru sayısı ile bunların sonuçlarını,
+
+	- Kodlamada dikkat edilecek hususlar
+	  * SQL kodlarının bir model sınıfından çağrılması
+	  * Console uygulmasından bu model sınıfından çağrılar yapılarak bu fonksiyonların test edilmesi
+	  * Query lerin parametrized yazılması (SQL injection ı engellemek ve performansı arttırmak için)
+	  * Query lerde exception oluşursa bunun handle edilmesi (Java Exception Handling ile)
+	  * Transaction yapılması gereken yerlerde transaction kullanılması (begin transaction, commit, rollback)
+	  * Minimum ama gerekli comment lerin atilmasi
+	  * Connection pooling yapılması artı puan (tek kullanicili console uygulamasinda faydasi yok ama konsepte uğraşılmış olmasını ödüllendirmek açısından)
